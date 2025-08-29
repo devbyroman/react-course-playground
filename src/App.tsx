@@ -1,33 +1,57 @@
 import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
+
+import CafeInfo from './components/CafeInfo/CafeInfo';
+import css from './App.module.css';
+import { type Votes, type VoteType } from './types/votes';
+import VoteOptions from './components/VoteOptions/VoteOptions.tsx';
+import VoteStats from './components/VoteStats/VoteStats.tsx';
+import Notification from './components/Notification/Notification.tsx';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [stats, setStats] = useState<Votes>({
+    good: 0,
+    neutral: 0,
+    bad: 0,
+  });
+
+  const handleType = (type: VoteType) => {
+    setStats((prev) => ({
+      ...prev,
+      [type]: prev[type] + 1,
+    }));
+  };
+
+  const resetVotes = () => {
+    setStats({
+      good: 0,
+      neutral: 0,
+      bad: 0,
+    });
+  };
+
+  const totalVotes = stats.good + stats.neutral + stats.bad;
+
+  const positiveRate = totalVotes
+    ? Math.round((stats.good / totalVotes) * 100)
+    : 0;
 
   return (
     <>
-      <div>
-        <a href='https://vite.dev' target='_blank'>
-          <img src={viteLogo} className='logo' alt='Vite logo' />
-        </a>
-        <a href='https://react.dev' target='_blank'>
-          <img src={reactLogo} className='logo react' alt='React logo' />
-        </a>
+      <div className={css.app}>
+        <CafeInfo />
+        <VoteOptions
+          onVote={handleType}
+          canReset={totalVotes > 0}
+          onReset={resetVotes}
+        />
+        {(totalVotes > 0 && (
+          <VoteStats
+            positiveRate={positiveRate}
+            totalVotes={totalVotes}
+            stats={stats}
+          />
+        )) || <Notification />}
       </div>
-      <h1>Vite + React</h1>
-      <div className='card'>
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className='read-the-docs'>
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }
